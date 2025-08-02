@@ -5,11 +5,14 @@
   <title>Ecstasy AI</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
+    body {
+      background-color: #0f0e0f;
+    }
     ::-webkit-scrollbar {
       width: 6px;
     }
     ::-webkit-scrollbar-thumb {
-      background: #0f0e0f;
+      background: #333;
       border-radius: 3px;
     }
     .chat-bubble {
@@ -20,26 +23,39 @@
     }
   </style>
 </head>
-<body class="bg-zinc-900 text-white h-screen flex flex-col font-sans">
+<body class="text-white h-screen flex flex-col font-sans">
 
+  <!-- Chat container -->
   <div id="chat" class="flex-1 overflow-y-auto px-6 py-6 space-y-4">
+    <!-- Initial assistant message -->
     <div class="bg-zinc-800 text-sm px-4 py-3 rounded-lg shadow chat-bubble relative border border-zinc-700 max-w-xl">
-      <p>Hello! I'm <strong>Ecstasy AI</strong>, What would you like help with today?</p>
-      <div class="text-xs text-gray-400 mt-2">07:44 AM</div>
+      <p>Hello! I'm <strong>Ecstasy AI</strong>, your specialized Lua programming assistant.<br>
+        I can help you with Lua syntax, functions, loops, metatables, coroutines, and more.<br>
+        What Lua code would you like help with today?</p>
+      <div class="text-xs text-gray-400 mt-2" id="init-time"></div>
     </div>
   </div>
 
+  <!-- Input and hint -->
   <div class="bg-zinc-900 border-t border-zinc-700 px-6 py-4">
     <div class="flex items-center gap-3">
       <textarea id="inputBox" rows="1" placeholder="Ask me about Lua programming..." class="flex-1 resize-none bg-zinc-800 text-white border border-zinc-700 px-4 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-pink-400"></textarea>
-      
+      <button onclick="sendPrompt()" class="bg-pink-400 hover:bg-pink-500 p-2 rounded-md transition copy-btn">
+        <svg class="w-5 h-5" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M22 2L11 13" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
     </div>
-    
+    <div class="text-xs text-gray-500 mt-1">Press Enter to send • Shift + Enter for new line</div>
   </div>
 
   <script>
     const chat = document.getElementById("chat");
     const inputBox = document.getElementById("inputBox");
+
+    // Set initial assistant time
+    document.getElementById("init-time").textContent = getTime();
 
     inputBox.addEventListener("keydown", function (e) {
       if (e.key === "Enter" && !e.shiftKey) {
@@ -48,18 +64,23 @@
       }
     });
 
+    function getTime() {
+      return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+
     async function sendPrompt() {
       const prompt = inputBox.value.trim();
       if (!prompt) return;
 
+      // User message
       const userBubble = document.createElement("div");
       userBubble.className = "bg-zinc-700 px-4 py-3 rounded-lg border border-zinc-600 max-w-xl chat-bubble";
-      userBubble.innerHTML = `<p>${prompt.replace(/\n/g, "<br>")}</p><div class="text-xs text-gray-400 mt-2">${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>`;
+      userBubble.innerHTML = `<p>${prompt.replace(/\n/g, "<br>")}</p><div class="text-xs text-gray-400 mt-2">${getTime()}</div>`;
       chat.appendChild(userBubble);
       chat.scrollTop = chat.scrollHeight;
-
       inputBox.value = "";
 
+      // Bot message placeholder
       const botBubble = document.createElement("div");
       botBubble.className = "bg-zinc-800 px-4 py-3 rounded-lg border border-zinc-700 max-w-xl chat-bubble relative";
       botBubble.innerHTML = `<p>Thinking...</p>`;
@@ -67,7 +88,7 @@
       chat.scrollTop = chat.scrollHeight;
 
       try {
-        const API_KEY = "AIzaSyBf1ly6NM9xUDyfVgZtttFYcaHNAIrvUNg"; 
+        const API_KEY = "YOUR_API_KEY_HERE"; // Replace with your actual Gemini API key
 
         const payload = {
           contents: [{ parts: [{ text: prompt }] }],
@@ -100,12 +121,12 @@
           botBubble.innerHTML = `
             <button onclick="copyScript(this)" class="absolute top-2 right-2 text-xs bg-zinc-700 text-white px-2 py-1 rounded opacity-0 copy-btn">Copy</button>
             <pre class="text-sm text-green-400 font-mono whitespace-pre-wrap overflow-x-auto">${reply}</pre>
-            <div class="text-xs text-gray-400 mt-2">${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+            <div class="text-xs text-gray-400 mt-2">${getTime()}</div>
           `;
         } else {
           botBubble.innerHTML = `
             <p>${reply.replace(/\n/g, "<br>")}</p>
-            <div class="text-xs text-gray-400 mt-2">${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+            <div class="text-xs text-gray-400 mt-2">${getTime()}</div>
           `;
         }
       } catch (err) {
@@ -126,4 +147,3 @@
 
 </body>
 </html>
-
